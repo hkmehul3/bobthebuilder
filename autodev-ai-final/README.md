@@ -61,7 +61,6 @@ WXO_ENVIRONMENT_ID=YOUR_ENVIRONMENT_ID
 1. **WXO_INSTANCE_URL**
    - Go to IBM Cloud Console → Watson Orchestrate
    - Copy your instance URL (includes `/instances/{instance_id}`)
-   - Example: `https://api.eu-gb.watson-orchestrate.cloud.ibm.com/instances/093fa815-22e1-49ab-9e11-19b03cbb4534`
 
 2. **WXO_API_KEY**
    - IBM Cloud Console → Manage → Access (IAM) → API keys
@@ -296,9 +295,9 @@ cat backend/.env  # On Windows: type backend\.env
 | Variable | Required | Description | Example |
 |----------|----------|-------------|---------|
 | `WXO_INSTANCE_URL` | ✅ | Watson Orchestrate instance URL | `https://api.eu-gb.watson-orchestrate.cloud.ibm.com/instances/...` |
-| `WXO_API_KEY` | ✅ | IBM Cloud API key | `WM1yAAKFxib4tvHx4DhNnR4KgQFEKqeBmnzOQwJPF7k0` |
-| `WXO_AGENT_ID` | ✅ | Watson Orchestrate agent ID | `428aca44-d8f0-41cd-b2d2-2c5b9b4dfc47` |
-| `WXO_ENVIRONMENT_ID` | ✅ | Watson Orchestrate environment ID | `dbeb9543-d1f6-4e61-99bf-9fa1557787f9` |
+| `WXO_API_KEY` | ✅ | IBM Cloud API key | `` |
+| `WXO_AGENT_ID` | ✅ | Watson Orchestrate agent ID | ` |
+| `WXO_ENVIRONMENT_ID` | ✅ | Watson Orchestrate environment ID | `` |
 
 ---
 
