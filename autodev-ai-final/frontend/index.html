@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BobTheBuilder - Self-Healing Code System</title>
+  <style>
+    * { box-sizing: border-box; }
+    :root {
+      --bg: #070b18;
+      --panel: rgba(255,255,255,0.08);
+      --line: rgba(255,255,255,0.14);
+      --text: #eef2ff;
+      --muted: #b8c5ff;
+      --cyan: #38bdf8;
+      --green: #34d399;
+      --yellow: #fbbf24;
+      --pink: #fb7185;
+      --blue: #6366f1;
+    }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(56,189,248,.25), transparent 32%),
+        radial-gradient(circle at 80% 10%, rgba(251,191,36,.20), transparent 30%),
+        linear-gradient(135deg, #070b18 0%, #0f172a 50%, #111827 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 42px 24px 34px;
+      border-bottom: 1px solid var(--line);
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+      background-size: 42px 42px;
+      mask-image: linear-gradient(to bottom, black, transparent 85%);
+    }
+    .hero-inner {
+      position: relative;
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: 30px;
+      align-items: center;
+    }
+    .badge {
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      padding: 8px 14px;
+      border:1px solid rgba(251,191,36,.5);
+      background: rgba(251,191,36,.10);
+      border-radius:999px;
+      color:#fde68a;
+      font-size:14px;
+      font-weight: 700;
+    }
+    h1 { font-size: clamp(42px, 7vw, 82px); line-height: .95; margin: 20px 0 14px; letter-spacing: -3px; }
+    .brand-gradient { background: linear-gradient(90deg,#fbbf24,#34d399,#38bdf8); -webkit-background-clip: text; color: transparent; }
+    .subtitle { color: var(--muted); max-width: 740px; font-size: 18px; line-height: 1.7; margin: 0 0 22px; }
+    .metrics { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 700px; }
+    .metric { background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
+    .metric b { display:block; font-size: 24px; color: #fff; }
+    .metric span { color: #a5b4fc; font-size: 13px; }
+    .builder-card {
+      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
+      border: 1px solid var(--line);
+      border-radius: 30px;
+      padding: 24px;
+      box-shadow: 0 28px 70px rgba(0,0,0,.35);
+      position: relative;
+    }
+    .bot {
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      display:block;
+      filter: drop-shadow(0 22px 35px rgba(0,0,0,.35));
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-10px) } }
+    .pipeline { display:grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-top: 18px; }
+    .step { text-align:center; padding: 10px 8px; background:#0b1228; border:1px solid #24324f; border-radius: 14px; color:#dbeafe; font-size: 12px; }
+    .container { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
+    .panel { background: var(--panel); border:1px solid var(--line); border-radius: 26px; padding: 22px; margin-bottom: 18px; box-shadow: 0 18px 40px rgba(0,0,0,.25); backdrop-filter: blur(10px); }
+    .section-title { display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 14px; }
+    h2 { margin: 0; font-size: 24px; }
+    textarea, select { width:100%; background:#08111f; color:#fff; border:1px solid #2b3b5f; border-radius:18px; padding:16px; font-size:15px; outline: none; }
+    textarea { min-height: 150px; resize: vertical; box-shadow: inset 0 0 0 1px rgba(56,189,248,.04); }
+    label { display:block; margin: 0 0 8px; color:#c7d2fe; font-weight: 700; }
+    .row { display:grid; grid-template-columns: 1fr 240px; gap: 16px; align-items:end; }
+    button { width:100%; background: linear-gradient(135deg,#fbbf24,#34d399 45%,#38bdf8); color:#06101f; border:none; border-radius:18px; padding:16px 18px; font-weight:900; cursor:pointer; font-size:16px; box-shadow: 0 15px 30px rgba(52,211,153,.18); }
+    button:hover { transform: translateY(-1px); filter: brightness(1.06); }
+    .grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:18px; }
+    .card { background: rgba(7, 13, 29, .86); border:1px solid #263653; border-radius:22px; padding:18px; position: relative; overflow: hidden; }
+    .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg,var(--yellow),var(--green),var(--cyan)); }
+    .card h3 { margin: 0 0 12px; color:#bfdbfe; display:flex; align-items:center; gap:8px; }
+    pre { white-space: pre-wrap; background:#020617; border:1px solid #1e293b; padding:14px; border-radius:14px; color:#dbeafe; overflow:auto; }
+    .pill { display:inline-block; padding:7px 11px; border-radius:999px; background:#10264a; color:#bfdbfe; border: 1px solid rgba(147,197,253,.25); margin:4px 6px 4px 0; font-size:13px; }
+    .risk { font-size: 34px; font-weight: 950; color:#86efac; }
+    .hidden { display:none; }
+    .loading-box { display:flex; align-items:center; gap: 14px; color:#dbeafe; }
+    .spinner { width:28px; height:28px; border:3px solid rgba(255,255,255,.15); border-top-color:#fbbf24; border-radius:50%; animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .footer { text-align:center; color:#94a3b8; margin-top: 24px; }
+    .tagline { color:#fde68a; font-weight:800; }
+    @media (max-width: 900px) { .hero-inner, .grid, .row, .metrics { grid-template-columns: 1fr; } h1 { letter-spacing: -1px; } .pipeline { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <span class="badge">🛠️ IBM Bob Dev Day Hackathon POC</span>
+        <h1><span class="brand-gradient">BobTheBuilder</span></h1>
+        <p class="subtitle">A visual self-healing code system that turns debugging into an automated build pipeline: error intake, repo scan, root-cause chain, multi-file fix, tests, risk intelligence, and PR draft.</p>
+        <div class="metrics">
+          <div class="metric"><b>70%</b><span>debug time reduction target</span></div>
+          <div class="metric"><b>5-step</b><span>automated repair workflow</span></div>
+          <div class="metric"><b>PR-ready</b><span>fix summary + tests</span></div>
+        </div>
+      </div>
+      <div class="builder-card">
+        <svg class="bot" viewBox="0 0 420 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BobTheBuilder robot mascot">
+          <defs>
+            <linearGradient id="helmet" x1="0" x2="1"><stop stop-color="#fbbf24"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
+            <linearGradient id="face" x1="0" x2="1"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#6366f1"/></linearGradient>
+          </defs>
+          <rect x="126" y="86" width="168" height="138" rx="34" fill="url(#face)" stroke="#bfdbfe" stroke-width="6"/>
+          <path d="M145 92c8-42 122-42 130 0" fill="url(#helmet)" stroke="#fde68a" stroke-width="5"/>
+          <rect x="163" y="54" width="94" height="38" rx="10" fill="#fbbf24" stroke="#fde68a" stroke-width="5"/>
+          <circle cx="177" cy="146" r="16" fill="#06101f"/><circle cx="243" cy="146" r="16" fill="#06101f"/>
+          <circle cx="181" cy="141" r="5" fill="#fff"/><circle cx="247" cy="141" r="5" fill="#fff"/>
+          <path d="M174 184c22 22 52 22 74 0" fill="none" stroke="#06101f" stroke-width="8" stroke-linecap="round"/>
+          <rect x="86" y="128" width="38" height="78" rx="18" fill="#34d399"/><rect x="296" y="128" width="38" height="78" rx="18" fill="#34d399"/>
+          <rect x="136" y="226" width="148" height="58" rx="20" fill="#111827" stroke="#334155" stroke-width="5"/>
+          <text x="210" y="263" text-anchor="middle" font-size="24" font-family="Arial" font-weight="800" fill="#fbbf24">BOB</text>
+          <path d="M318 78l40-28 13 19-41 28z" fill="#fbbf24" stroke="#fde68a" stroke-width="4"/>
+          <circle cx="364" cy="50" r="13" fill="#94a3b8"/>
+        </svg>
+        <div class="pipeline">
+          <div class="step">1. Error</div><div class="step">2. Scan</div><div class="step">3. Fix</div><div class="step">4. Test</div><div class="step">5. PR</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="container">
+    <section class="panel">
+      <div class="section-title">
+        <h2>Paste Runtime Error</h2>
+        <span class="tagline">Can we fix it? Yes, Bob can.</span>
+      </div>
+      <div class="row">
+        <div>
+          <textarea id="errorInput">TypeError: unsupported operand type(s) for +: 'int' and 'str'</textarea>
+        </div>
+        <div>
+          <label>Developer Skill Level</label>
+          <select id="skillLevel">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="expert">Expert</option>
+          </select>
+          <br><br>
+          <button onclick="analyze()">🛠️ Build the Fix</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="loading" class="panel hidden">
+      <div class="loading-box"><div class="spinner"></div><div><b>BobTheBuilder is working...</b><br>Scanning repo context, tracing root cause, generating tests, and preparing a PR draft.</div></div>
+    </section>
+
+    <section id="results" class="hidden">
+      <div class="grid">
+        <div class="card"><h3>🔍 Context Scan</h3><div id="contextScan"></div></div>
+        <div class="card"><h3>🧠 Root Cause Chain</h3><div id="rootCause"></div></div>
+        <div class="card"><h3>🎯 Adaptive Explanation</h3><p id="adaptive"></p></div>
+        <div class="card"><h3>⚠️ Risk Intelligence</h3><div class="risk" id="confidence"></div><p id="riskText"></p></div>
+      </div>
+      <div class="panel"><h2>🛠️ Multi-file Fix Plan</h2><div id="fixes"></div></div>
+      <div class="grid">
+        <div class="card"><h3>🧪 Generated Tests</h3><div id="tests"></div></div>
+        <div class="card"><h3>📄 PR Draft</h3><div id="pr"></div></div>
+      </div>
+    </section>
+
+    <p class="footer">BobTheBuilder — Built for the IBM Bob Dev Day Hackathon.</p>
+  </main>
+
+  <script>
+    async function analyze() {
+      const error = document.getElementById('errorInput').value;
+      const skill_level = document.getElementById('skillLevel').value;
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('results').classList.add('hidden');
+      try {
+        const res = await fetch('http://127.0.0.1:8000/analyze', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ error, skill_level })
+        });
+        const data = await res.json();
+        render(data);
+      } catch (err) {
+        alert('Backend not reachable. Start it with: python3 -m uvicorn main:app --reload');
+      } finally {
+        document.getElementById('loading').classList.add('hidden');
+      }
+    }
+    function render(data) {
+      document.getElementById('contextScan').innerHTML = data.context_scan.map(x => `<p><b>${x.file}</b><br>${x.finding}</p>`).join('');
+      document.getElementById('rootCause').innerHTML = data.root_cause_chain.map(x => `<span class="pill">${x}</span>`).join('');
+      document.getElementById('adaptive').innerText = data.adaptive_explanation;
+      document.getElementById('confidence').innerText = data.risk_analysis.confidence;
+      document.getElementById('riskText').innerText = `${data.risk_analysis.risk_level} risk — ${data.risk_analysis.why_safe}`;
+      document.getElementById('fixes').innerHTML = data.multi_file_fix.map(f => `<div class="card"><h3>${f.file}</h3><p>${f.change}</p><pre>Before:\n${f.before}\n\nAfter:\n${f.after}</pre></div>`).join('');
+      document.getElementById('tests').innerHTML = data.generated_tests.map(x => `<span class="pill">${x}</span>`).join('');
+      document.getElementById('pr').innerHTML = `<p><b>${data.pr_draft.title}</b></p><p>${data.pr_draft.summary}</p>${data.pr_draft.checklist.map(x => `<span class="pill">${x}</span>`).join('')}`;
+      document.getElementById('results').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
