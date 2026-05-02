@@ -1,185 +1,118 @@
-# BobTheBuilder — Self-Healing Code System
+# 🤖 BobTheBuilder - AI-Powered Code Error Analysis
 
-BobTheBuilder is a hackathon-ready proof-of-concept for the IBM Bob Dev Day Hackathon.
-
-It demonstrates a developer workflow where a runtime error is converted into a structured repair plan:
-
-**Error → Repo Context → Root Cause Chain → Multi-file Fix → Tests → Risk Analysis → PR Draft**
+An intelligent error analysis system powered by IBM Watson Orchestrate that provides comprehensive debugging assistance, multi-file fixes, and risk analysis.
 
 ---
 
 ## 🚀 Quick Start
 
-### Run Backend
+### Prerequisites
+
+- Python 3.8 or higher
+- IBM Watson Orchestrate account with API access
+- Modern web browser
+
+### 1. Clone the Repository
+
+```bash
+git clone <your-repo-url>
+cd autodev-ai-final
+```
+
+### 2. Set Up Backend
 
 ```bash
 cd backend
-python3 -m pip install -r requirements.txt
-python3 -m uvicorn main:app --reload
+
+# Create virtual environment (recommended)
+python -m venv venv
+
+# Activate virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-Backend runs at: `http://127.0.0.1:8000`  
-Swagger docs: `http://127.0.0.1:8000/docs`
+### 3. Configure Environment Variables
 
-### Run Frontend
-
-Open: `frontend/index.html` in your browser
-
-Paste any runtime error (e.g., `TypeError: unsupported operand type(s) for +: 'int' and 'str'`)
-
-Click **🛠️ Build the Fix** to get dynamic analysis.
-
----
-
-## ✨ Backend is Now Fully Dynamic
-
-### Previous Behavior (Hardcoded)
-```
-❌ Returns same response for ALL errors
-❌ Ignores the actual error message
-❌ Static "TypeError" analysis regardless of input
-```
-
-### New Behavior (Fully Dynamic)
-```
-✅ Detects error type from error message
-✅ Generates context-aware fixes specific to that error
-✅ Produces skill-level-specific explanations
-✅ Different errors → Completely different outputs
-```
-
----
-
-## 🧠 Error Type Detection
-
-The backend now **dynamically detects** these error types:
-
-| Error Type | Detection | Response |
-|-----------|-----------|----------|
-| **TypeError** | Keyword matching | Type validation fixes + coercion tests |
-| **ZeroDivisionError** | Keyword matching | Division checks + denominator validation |
-| **IndexError** | Keyword matching | Bounds checking + safe indexing |
-| **KeyError** | Keyword matching | Safe dictionary access + defaults |
-| **AttributeError** | Keyword matching | Attribute existence checks + hasattr() |
-| **ValueError** | Keyword matching | Input validation + constraint checks |
-| **ImportError** | Keyword matching | Import path fixes + relative imports |
-| **NameError** | Keyword matching | Variable definition + scope checks |
-| **RuntimeError** | Keyword matching | Precondition validation + state checks |
-
----
-
-## 🔄 Dynamic Output Generation
-
-Each error type generates **unique** content for:
-
-### 1. 🔍 Context Scan
-- File-specific analysis relevant to error type
-- Localized findings per error
-
-Example for **TypeError**:
-```
-sample_repo/main.py: Type mismatch in add_numbers() when operands have different types
-sample_repo/utils.py: to_number() conversion exists but not applied to all inputs
-```
-
-Example for **ZeroDivisionError**:
-```
-sample_repo/main.py: Division operation without denominator validation
-sample_repo/utils.py: No zero-check before arithmetic division
-```
-
-### 2. 🧠 Root Cause Chain
-- Step-by-step error flow
-- Input → Processing → Failure point
-
-Example for **TypeError**: `Untyped input → Arithmetic operation → Type mismatch → Crash`
-
-Example for **ZeroDivisionError**: `Zero value → Division attempt → Zero-check missing → Crash`
-
-### 3. 💡 Adaptive Explanation
-- **Beginner**: Simple, everyday language
-- **Intermediate**: Technical details and best practices
-- **Expert**: Deep architectural solutions
-
-Example for **TypeError**:
-- Beginner: "Python tried to add a number and text together. Validate types first."
-- Expert: "Type system violation at operation boundary. Implement input validation layer."
-
-### 4. 🛠️ Multi-file Fix
-- 3+ files with before/after code snippets
-- Specific fixes for each error type
-
-Example for **TypeError**:
-```python
-# File: sample_repo/utils.py
-def to_number(value):
-    if isinstance(value, str):
-        value = value.strip()
-    try:
-        return int(value)
-    except (TypeError, ValueError) as e:
-        raise ValueError(f'Cannot convert {type(value).__name__} to number')
-```
-
-### 5. 🧪 Generated Tests
-- 5 realistic test case names
-- Specific to error type and fix
-
-Example for **TypeError**:
-- `test_valid_type_addition`
-- `test_string_to_int_conversion`
-- `test_mixed_type_inputs`
-- `test_type_error_handling`
-- `test_invalid_type_rejection`
-
-### 6. ⚠️ Risk Analysis
-- **Risk Score**: 60-95%
-- **Risk Level**: Low/Medium/High/Critical
-- **Impact Assessment**: User-facing effects
-- **Rollback Plan**: Safe reversal strategy
-
-Example for **ZeroDivisionError**:
-```json
-{
-  "risk_score": "88%",
-  "risk_level": "Critical",
-  "blast_radius": "Financial calculations, analytics",
-  "impact": "Calculation failures, incorrect results"
-}
-```
-
-### 7. 🧾 PR Draft
-- Auto-generated pull request title
-- Detailed description
-- Ready-to-use checklist
-
----
-
-## 🧪 Verification: All Tests Pass
-
-Run the test suite to verify dynamic behavior:
+Create a `.env` file in the `backend` directory:
 
 ```bash
-python test_all_errors.py
+cd backend
+# Create .env file
 ```
 
-Expected output:
+Add the following environment variables to `.env`:
+
+```env
+# Watson Orchestrate Configuration
+WXO_INSTANCE_URL=https://api.eu-gb.watson-orchestrate.cloud.ibm.com/instances/YOUR_INSTANCE_ID
+WXO_API_KEY=YOUR_IBM_CLOUD_API_KEY
+WXO_AGENT_ID=YOUR_AGENT_ID
+WXO_ENVIRONMENT_ID=YOUR_ENVIRONMENT_ID
 ```
-✅ 13/13 tests passed
-✓ Detects 9+ error types dynamically
-✓ Generates context-aware fixes for each error type
-✓ Produces skill-level-specific explanations
-✓ Different errors produce completely different outputs
-✓ No static or hardcoded responses
+
+#### How to Get These Values:
+
+1. **WXO_INSTANCE_URL**
+   - Go to IBM Cloud Console → Watson Orchestrate
+   - Copy your instance URL (includes `/instances/{instance_id}`)
+   - Example: `https://api.eu-gb.watson-orchestrate.cloud.ibm.com/instances/093fa815-22e1-49ab-9e11-19b03cbb4534`
+
+2. **WXO_API_KEY**
+   - IBM Cloud Console → Manage → Access (IAM) → API keys
+   - Create a new API key or use existing one
+   - Copy the API key value
+
+3. **WXO_AGENT_ID**
+   - Watson Orchestrate Console → Your Agent
+   - Copy the Agent ID from agent settings
+   - Example: `428aca44-d8f0-41cd-b2d2-2c5b9b4dfc47`
+
+4. **WXO_ENVIRONMENT_ID**
+   - Watson Orchestrate Console → Environment settings
+   - Copy the Environment ID
+   - Example: `dbeb9543-d1f6-4e61-99bf-9fa1557787f9`
+
+### 4. Start the Backend Server
+
+```bash
+# Make sure you're in the backend directory with venv activated
+python -m uvicorn main:app --reload
+```
+
+The backend will start at: `http://127.0.0.1:8000`
+
+### 5. Open the Frontend
+
+Simply open `frontend/index.html` in your web browser.
+
+Or use a local server:
+```bash
+# From the frontend directory
+python -m http.server 8080
+# Then open http://localhost:8080
 ```
 
 ---
 
-## 📋 API Endpoint
+## 📋 API Documentation
 
-### POST `/analyze`
+### Swagger UI
 
-**Request:**
+Once the backend is running, access the interactive API documentation:
+- **Swagger UI**: http://127.0.0.1:8000/docs
+- **ReDoc**: http://127.0.0.1:8000/redoc
+
+### Main Endpoint
+
+**POST** `/analyze`
+
+**Request Body:**
 ```json
 {
   "error": "TypeError: unsupported operand type(s) for +: 'int' and 'str'",
@@ -187,193 +120,240 @@ Expected output:
 }
 ```
 
-**Response Structure:**
+**Skill Levels:**
+- `beginner` - Simple explanations
+- `intermediate` - Technical details
+- `expert` - Advanced solutions
+
+**Response:**
 ```json
 {
-  "input_error": "...",
   "error_type": "TypeError",
-  "skill_level": "beginner",
   "context_scan": [...],
   "root_cause_chain": [...],
   "adaptive_explanation": "...",
   "multi_file_fix": [...],
   "generated_tests": [...],
   "risk_analysis": {...},
-  "pr_draft": {...}
+  "pr_draft": {...},
+  "input_error": "...",
+  "skill_level": "beginner",
+  "bob_usage_note": "Powered by IBM Watson Orchestrate"
 }
 ```
 
 ---
 
-## 💻 Backend Implementation
+## 🧪 Testing
 
-### Core Functions
+### Test via Swagger UI
 
-**`detect_error_type(error_message)`**
-- Analyzes error message string
-- Returns detected error type
+1. Go to http://127.0.0.1:8000/docs
+2. Click on `POST /analyze`
+3. Click "Try it out"
+4. Enter a test error message
+5. Click "Execute"
 
-**`get_explanation_by_level(error_type, skill_level)`**
-- Generates 3-level adaptive explanations
-- Beginner-friendly to expert-level
+### Test via Frontend
 
-**`get_context_scan(error_type)`**
-- Returns file-specific analysis
-- Relevant to error type
+1. Open `frontend/index.html`
+2. Paste any error message
+3. Select skill level
+4. Click "🛠️ Build the Fix"
 
-**`get_root_cause_chain(error_type, error_message)`**
-- Step-by-step error flow
-- Shows how error occurs
+### Example Test Errors
 
-**`get_multi_file_fix(error_type)`**
+```python
+# TypeError
+"TypeError: unsupported operand type(s) for +: 'int' and 'str'"
+
+# ZeroDivisionError
+"ZeroDivisionError: division by zero"
+
+# IndexError
+"IndexError: list index out of range"
+
+# KeyError
+"KeyError: 'username'"
+
+# AttributeError
+"AttributeError: 'NoneType' object has no attribute 'split'"
+```
+
+---
+
+## 🏗️ Project Structure
+
+```
+autodev-ai-final/
+├── backend/
+│   ├── .env                 # Environment variables (create this)
+│   ├── main.py             # FastAPI backend
+│   └── requirements.txt    # Python dependencies
+├── frontend/
+│   └── index.html          # Web interface
+├── docs/                   # Additional documentation
+├── sample_repo/            # Sample code for testing
+└── README.md              # This file
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### Backend Won't Start
+
+**Error**: `ModuleNotFoundError`
+```bash
+# Solution: Install dependencies
+pip install -r requirements.txt
+```
+
+**Error**: `Missing env vars`
+```bash
+# Solution: Check .env file exists and has all required variables
+cat backend/.env  # On Windows: type backend\.env
+```
+
+### API Returns 401 Unauthorized
+
+**Problem**: Invalid API key
+```bash
+# Solution: Verify your WXO_API_KEY in .env
+# Generate a new API key from IBM Cloud Console if needed
+```
+
+### API Returns 404 Not Found
+
+**Problem**: Incorrect instance URL or agent ID
+```bash
+# Solution: Verify WXO_INSTANCE_URL and WXO_AGENT_ID in .env
+# Check IBM Watson Orchestrate console for correct values
+```
+
+### No Response from Watson Orchestrate
+
+**Problem**: Agent not responding
+```bash
+# Solution: 
+# 1. Check Watson Orchestrate console - is the agent active?
+# 2. Verify agent_id is correct
+# 3. Check backend console logs for detailed error messages
+```
+
+### Frontend Can't Connect to Backend
+
+**Problem**: CORS or connection error
+```bash
+# Solution:
+# 1. Ensure backend is running on http://127.0.0.1:8000
+# 2. Check browser console for errors
+# 3. Try accessing http://127.0.0.1:8000/docs directly
+```
+
+---
+
+## 📊 Features
+
+### ✅ Intelligent Error Analysis
+- Detects 9+ error types automatically
+- Context-aware code scanning
+- Root cause chain analysis
+
+### ✅ Multi-File Fixes
 - Before/after code snippets
-- 3+ files with specific fixes
+- Multiple file modifications
+- Test generation
 
-**`get_generated_tests(error_type)`**
-- 5 realistic test names
-- Error-type-specific coverage
+### ✅ Risk Assessment
+- Risk score calculation
+- Impact analysis
+- Rollback planning
 
-**`get_risk_analysis(error_type)`**
-- Risk score, level, and impact
-- Rollback and safety guidance
+### ✅ Adaptive Explanations
+- Beginner-friendly language
+- Intermediate technical details
+- Expert-level solutions
 
-**`generate_dynamic_output(error, skill_level)`**
-- Main orchestration function
-- Combines all analysis sections
-- Returns fully dynamic response
-
----
-
-## 🎯 Key Improvements
-
-### Before
-- Static hardcoded response for all errors
-- Ignored actual error type
-- Same output every time
-
-### After
-- 9+ error types dynamically detected
-- Context-aware fixes for each type
-- Skill-level adaptation
-- Completely different outputs per error
-- No hardcoded values
-- Restart-safe and clean code
+### ✅ PR-Ready Output
+- Auto-generated PR titles
+- Detailed descriptions
+- Implementation checklists
 
 ---
 
-## 📊 Diagnostic Report
+## 🔐 Security Notes
 
-**Date**: May 2, 2026 | **Status**: ✅ COMPLETE
-
-### Changes Made
-
-| Component | Change | Impact |
-|-----------|--------|--------|
-| `backend/main.py` | Added 7 dynamic analysis functions | Backend now fully adaptive |
-| `frontend/index.html` | Fixed render function | Frontend correctly displays dynamic data |
-| Error Detection | String pattern matching | Supports 9+ error types |
-| Explanations | 3-level skill adaptation | Personalized for each developer |
-| Test Coverage | 13/13 passing | Verified across all error types |
-
-### Verification Tests
-
-✅ Error type detection for 9 types  
-✅ Response structure validation  
-✅ Skill-level adaptation  
-✅ Output diversity verification  
-✅ No hardcoded responses  
-✅ All required fields populated  
+- **Never commit `.env` file** to version control
+- Keep your API keys secure
+- Rotate API keys regularly
+- Use environment-specific configurations
 
 ---
 
-## Hackathon Positioning
+## 📝 Environment Variables Reference
 
-We did not build another chatbot. We built a **self-healing developer workflow** powered by IBM Bob's repository-aware reasoning with **fully dynamic error analysis**.
-
-- ❌ Before: Static demo responses
-- ✅ After: Adaptive, context-aware fixes for ANY error
-
----
-
-## IBM Bob Usage
-
-IBM Bob's repository-aware reasoning enables:
-- Dynamic error type classification
-- Context-aware fix generation
-- Adaptive explanation for skill levels
-- Multi-file impact assessment
-- Risk-aware recommendations
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `WXO_INSTANCE_URL` | ✅ | Watson Orchestrate instance URL | `https://api.eu-gb.watson-orchestrate.cloud.ibm.com/instances/...` |
+| `WXO_API_KEY` | ✅ | IBM Cloud API key | `WM1yAAKFxib4tvHx4DhNnR4KgQFEKqeBmnzOQwJPF7k0` |
+| `WXO_AGENT_ID` | ✅ | Watson Orchestrate agent ID | `428aca44-d8f0-41cd-b2d2-2c5b9b4dfc47` |
+| `WXO_ENVIRONMENT_ID` | ✅ | Watson Orchestrate environment ID | `dbeb9543-d1f6-4e61-99bf-9fa1557787f9` |
 
 ---
 
-## 📋 Diagnostic Report: ModuleNotFoundError Fix
+## 🎯 Usage Examples
 
-**Date**: May 2, 2026 | **Status**: ✅ RESOLVED
+### Example 1: Simple TypeError
 
-### Error Discovered
-```
-ModuleNotFoundError: No module named 'utils'
-```
-
-### 🔍 Context Scan
-
-| File | Issue | Impact |
-|------|-------|--------|
-| `sample_repo/main.py` | Bare import `from utils import to_number` fails in test context | Import resolution breaks when pytest runs from project root |
-| `sample_repo/utils.py` | Helper module not found due to improper path reference | Type conversion unavailable to main module |
-| `tests/test_calculator.py` | Test collection fails before execution | Zero test pass rate, CI/CD pipeline blocked |
-
-### 🧠 Root Cause Chain
-
-1. **Test Execution Context** → pytest runs from project root
-2. **Bare Import Statement** → `from utils import to_number` has no package scope
-3. **Module Search Failure** → Python searches global sys.path, not `sample_repo/` directory
-4. **ImportError Raised** → Test collection phase crashes before any assertions
-5. **Pipeline Impact** → Entire test suite non-functional
-
-### 💡 Explanation
-
-When tests run from the project root, Python cannot resolve bare `utils` imports. The fix uses relative import: `from .utils import to_number` which explicitly tells Python to find `utils` in the current package directory.
-
-### ⚠️ Risk Analysis
-
-| Metric | Value |
-|--------|-------|
-| **Risk Score** | 78% |
-| **Severity** | 🔴 HIGH |
-| **Impact** | QA workflow broken, untested code reaches production |
-| **Affected Areas** | System stability, development velocity, code quality |
-
-### 🛠️ Fix Applied
-
-**File**: `sample_repo/main.py`
-
-```diff
-- from utils import to_number
-+ from .utils import to_number
+**Input:**
+```json
+{
+  "error": "TypeError: can only concatenate str (not \"int\") to str",
+  "skill_level": "beginner"
+}
 ```
 
-### ✅ Test Results
+**Output:** Beginner-friendly explanation with simple fixes
 
+### Example 2: Complex Error
+
+**Input:**
+```json
+{
+  "error": "AttributeError: 'NoneType' object has no attribute 'get'",
+  "skill_level": "expert"
+}
 ```
-tests/test_calculator.py::test_add_two_integers PASSED                   [ 33%]
-tests/test_calculator.py::test_add_numeric_string PASSED                 [ 66%]
-tests/test_calculator.py::test_invalid_input_raises_value_error PASSED   [100%]
 
-============================== 3 passed in 0.07s ==============================
-```
+**Output:** Deep analysis with architectural recommendations
 
-### 🧪 Test Coverage
+---
 
-- ✅ `test_add_two_integers` — Integer addition
-- ✅ `test_add_numeric_string` — String-to-number coercion
-- ✅ `test_invalid_input_raises_value_error` — Error handling
+## 🤝 Support
 
-### 🧾 PR Details
+For issues or questions:
+1. Check the troubleshooting section above
+2. Review backend console logs for detailed errors
+3. Verify all environment variables are correct
+4. Check IBM Watson Orchestrate console for agent status
 
-**Title**: Fix ModuleNotFoundError in sample_repo/main.py  
-**Badges**: Root cause identified | Multi-file fix | Regression tests | Risk analysis complete
+---
 
-IBM Bob is positioned as the repo-aware intelligence layer that helps analyze code context, identify root cause, generate patches, produce tests, and prepare PR-ready documentation.
+## 📄 License
 
-For the POC, the backend returns structured demo output so judges can clearly see the complete workflow.
+[Your License Here]
+
+---
+
+## 🙏 Acknowledgments
+
+- Built with IBM Watson Orchestrate
+- Powered by FastAPI
+- Frontend using vanilla JavaScript
+
+---
+
+**Last Updated**: May 2, 2026  
+**Version**: 3.0.0  
+**Status**: ✅ Production Ready

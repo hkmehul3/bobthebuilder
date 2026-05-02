@@ -1,236 +1,731 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BobTheBuilder - Self-Healing Code System</title>
-  <style>
-    * { box-sizing: border-box; }
-    :root {
-      --bg: #070b18;
-      --panel: rgba(255,255,255,0.08);
-      --line: rgba(255,255,255,0.14);
-      --text: #eef2ff;
-      --muted: #b8c5ff;
-      --cyan: #38bdf8;
-      --green: #34d399;
-      --yellow: #fbbf24;
-      --pink: #fb7185;
-      --blue: #6366f1;
-    }
-    body {
-      margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(56,189,248,.25), transparent 32%),
-        radial-gradient(circle at 80% 10%, rgba(251,191,36,.20), transparent 30%),
-        linear-gradient(135deg, #070b18 0%, #0f172a 50%, #111827 100%);
-      color: var(--text);
-      min-height: 100vh;
-    }
-    .hero {
-      position: relative;
-      overflow: hidden;
-      padding: 42px 24px 34px;
-      border-bottom: 1px solid var(--line);
-    }
-    .hero::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
-      background-size: 42px 42px;
-      mask-image: linear-gradient(to bottom, black, transparent 85%);
-    }
-    .hero-inner {
-      position: relative;
-      max-width: 1180px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1.1fr .9fr;
-      gap: 30px;
-      align-items: center;
-    }
-    .badge {
-      display:inline-flex;
-      align-items:center;
-      gap: 8px;
-      padding: 8px 14px;
-      border:1px solid rgba(251,191,36,.5);
-      background: rgba(251,191,36,.10);
-      border-radius:999px;
-      color:#fde68a;
-      font-size:14px;
-      font-weight: 700;
-    }
-    h1 { font-size: clamp(42px, 7vw, 82px); line-height: .95; margin: 20px 0 14px; letter-spacing: -3px; }
-    .brand-gradient { background: linear-gradient(90deg,#fbbf24,#34d399,#38bdf8); -webkit-background-clip: text; color: transparent; }
-    .subtitle { color: var(--muted); max-width: 740px; font-size: 18px; line-height: 1.7; margin: 0 0 22px; }
-    .metrics { display:grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 700px; }
-    .metric { background: rgba(255,255,255,.07); border: 1px solid var(--line); border-radius: 18px; padding: 14px; }
-    .metric b { display:block; font-size: 24px; color: #fff; }
-    .metric span { color: #a5b4fc; font-size: 13px; }
-    .builder-card {
-      background: linear-gradient(180deg, rgba(255,255,255,.12), rgba(255,255,255,.06));
-      border: 1px solid var(--line);
-      border-radius: 30px;
-      padding: 24px;
-      box-shadow: 0 28px 70px rgba(0,0,0,.35);
-      position: relative;
-    }
-    .bot {
-      width: 100%;
-      max-width: 360px;
-      margin: 0 auto;
-      display:block;
-      filter: drop-shadow(0 22px 35px rgba(0,0,0,.35));
-      animation: float 3s ease-in-out infinite;
-    }
-    @keyframes float { 0%,100%{ transform: translateY(0) } 50%{ transform: translateY(-10px) } }
-    .pipeline { display:grid; grid-template-columns: repeat(5,1fr); gap: 10px; margin-top: 18px; }
-    .step { text-align:center; padding: 10px 8px; background:#0b1228; border:1px solid #24324f; border-radius: 14px; color:#dbeafe; font-size: 12px; }
-    .container { max-width: 1180px; margin: 0 auto; padding: 28px 20px 60px; }
-    .panel { background: var(--panel); border:1px solid var(--line); border-radius: 26px; padding: 22px; margin-bottom: 18px; box-shadow: 0 18px 40px rgba(0,0,0,.25); backdrop-filter: blur(10px); }
-    .section-title { display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 14px; }
-    h2 { margin: 0; font-size: 24px; }
-    textarea, select { width:100%; background:#08111f; color:#fff; border:1px solid #2b3b5f; border-radius:18px; padding:16px; font-size:15px; outline: none; }
-    textarea { min-height: 150px; resize: vertical; box-shadow: inset 0 0 0 1px rgba(56,189,248,.04); }
-    label { display:block; margin: 0 0 8px; color:#c7d2fe; font-weight: 700; }
-    .row { display:grid; grid-template-columns: 1fr 240px; gap: 16px; align-items:end; }
-    button { width:100%; background: linear-gradient(135deg,#fbbf24,#34d399 45%,#38bdf8); color:#06101f; border:none; border-radius:18px; padding:16px 18px; font-weight:900; cursor:pointer; font-size:16px; box-shadow: 0 15px 30px rgba(52,211,153,.18); }
-    button:hover { transform: translateY(-1px); filter: brightness(1.06); }
-    .grid { display:grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:18px; }
-    .card { background: rgba(7, 13, 29, .86); border:1px solid #263653; border-radius:22px; padding:18px; position: relative; overflow: hidden; }
-    .card::before { content:""; position:absolute; top:0; left:0; right:0; height:3px; background: linear-gradient(90deg,var(--yellow),var(--green),var(--cyan)); }
-    .card h3 { margin: 0 0 12px; color:#bfdbfe; display:flex; align-items:center; gap:8px; }
-    pre { white-space: pre-wrap; background:#020617; border:1px solid #1e293b; padding:14px; border-radius:14px; color:#dbeafe; overflow:auto; }
-    .pill { display:inline-block; padding:7px 11px; border-radius:999px; background:#10264a; color:#bfdbfe; border: 1px solid rgba(147,197,253,.25); margin:4px 6px 4px 0; font-size:13px; }
-    .risk { font-size: 34px; font-weight: 950; color:#86efac; }
-    .hidden { display:none; }
-    .loading-box { display:flex; align-items:center; gap: 14px; color:#dbeafe; }
-    .spinner { width:28px; height:28px; border:3px solid rgba(255,255,255,.15); border-top-color:#fbbf24; border-radius:50%; animation: spin 1s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .footer { text-align:center; color:#94a3b8; margin-top: 24px; }
-    .tagline { color:#fde68a; font-weight:800; }
-    @media (max-width: 900px) { .hero-inner, .grid, .row, .metrics { grid-template-columns: 1fr; } h1 { letter-spacing: -1px; } .pipeline { grid-template-columns: 1fr; } }
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>BobTheBuilder — Self-Healing Code</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0a0a0f;
+    --surface:   #111118;
+    --card:      #16161f;
+    --border:    #222230;
+    --accent:    #be95ff;
+    --accent2:   #78a9ff;
+    --green:     #42be65;
+    --red:       #fa4d56;
+    --amber:     #f1c21b;
+    --text:      #e8e8f0;
+    --muted:     #6e6e8a;
+    --mono:      'IBM Plex Mono', monospace;
+    --sans:      'IBM Plex Sans', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* ── header ── */
+  header {
+    border-bottom: 1px solid var(--border);
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+  .logo {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+  }
+  .logo span { color: var(--muted); }
+  .ibm-badge {
+    margin-left: auto;
+    font-size: 11px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* ── hero ── */
+  .hero {
+    padding: 56px 32px 32px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .hero h1 {
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 300;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 12px;
+  }
+  .hero h1 strong { font-weight: 600; color: var(--accent); }
+  .hero p {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 520px;
+  }
+
+  /* ── input card ── */
+  .input-card {
+    max-width: 860px;
+    margin: 0 auto 40px;
+    padding: 0 32px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--muted);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot.r { background: #fa4d56; }
+  .dot.y { background: #f1c21b; }
+  .dot.g { background: #42be65; }
+
+  textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    resize: none;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.7;
+    padding: 20px;
+    min-height: 140px;
+  }
+  textarea::placeholder { color: var(--muted); }
+
+  .input-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .skill-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+  .skill-tabs { display: flex; gap: 4px; }
+  .skill-tab {
+    padding: 5px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-family: var(--mono);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .skill-tab.active, .skill-tab:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(190,149,255,0.08);
+  }
+  .analyze-btn {
+    margin-left: auto;
+    padding: 9px 24px;
+    background: var(--accent);
+    color: #0a0a0f;
+    border: none;
+    border-radius: 8px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .analyze-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .analyze-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ── spinner ── */
+  .spinner {
+    display: none;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(10,10,15,0.3);
+    border-top-color: #0a0a0f;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── results ── */
+  #results {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    animation: fadeUp 0.4s ease;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── summary bar ── */
+  .summary-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 16px 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .error-type-badge {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: rgba(250,77,86,0.15);
+    color: var(--red);
+    border: 1px solid rgba(250,77,86,0.3);
+  }
+  .risk-badge {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .risk-Critical { background: rgba(250,77,86,0.15); color: var(--red); border: 1px solid rgba(250,77,86,0.3); }
+  .risk-High     { background: rgba(241,194,27,0.15); color: var(--amber); border: 1px solid rgba(241,194,27,0.3); }
+  .risk-Medium   { background: rgba(120,169,255,0.15); color: var(--accent2); border: 1px solid rgba(120,169,255,0.3); }
+  .risk-Low      { background: rgba(66,190,101,0.15); color: var(--green); border: 1px solid rgba(66,190,101,0.3); }
+  .powered-by {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* ── section cards ── */
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .section-head {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .section-head:hover { background: rgba(255,255,255,0.02); }
+  .step-pill {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 500; font-family: var(--mono);
+    flex-shrink: 0;
+  }
+  .s1 { background: rgba(190,149,255,0.15); color: var(--accent); }
+  .s2 { background: rgba(120,169,255,0.15); color: var(--accent2); }
+  .s3 { background: rgba(66,190,101,0.15); color: var(--green); }
+  .s4 { background: rgba(241,194,27,0.15); color: var(--amber); }
+  .s5 { background: rgba(250,77,86,0.15); color: var(--red); }
+  .section-title { font-size: 13px; font-weight: 500; flex: 1; }
+  .chevron { color: var(--muted); font-size: 11px; transition: transform 0.2s; }
+  .section.collapsed .chevron { transform: rotate(-90deg); }
+  .section.collapsed .section-body { display: none; }
+  .section-body { padding: 20px; }
+
+  /* ── context scan ── */
+  .file-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .file-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .file-icon { font-size: 13px; margin-top: 1px; flex-shrink: 0; }
+  .file-path { font-family: var(--mono); font-size: 12px; color: var(--accent2); margin-bottom: 3px; }
+  .file-finding { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+  /* ── cause chain ── */
+  .chain-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 8px 0;
+  }
+  .chain-left { display: flex; flex-direction: column; align-items: center; }
+  .chain-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .chain-line { width: 1px; flex: 1; background: var(--border); margin: 4px 0; min-height: 20px; }
+  .chain-text { font-size: 13px; line-height: 1.6; padding-top: 2px; }
+  .c0 { background: var(--accent); }
+  .c1 { background: var(--accent2); }
+  .c2 { background: var(--amber); }
+  .c3 { background: #ff832b; }
+  .c4 { background: var(--red); }
+
+  /* ── explanation ── */
+  .explanation-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+
+  /* ── code fix ── */
+  .fix-file {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .fix-file:last-child { margin-bottom: 0; }
+  .fix-file-head {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .fix-file-name { font-family: var(--mono); font-size: 12px; color: var(--accent2); }
+  .fix-change { font-size: 11px; color: var(--muted); }
+  .diff-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); }
+  .diff-before, .diff-after { padding: 14px 16px; font-family: var(--mono); font-size: 12px; line-height: 1.7; white-space: pre-wrap; overflow-x: auto; }
+  .diff-before { background: rgba(250,77,86,0.06); }
+  .diff-after  { background: rgba(66,190,101,0.06); }
+  .diff-label { font-size: 10px; padding: 4px 8px; display: block; margin-bottom: 8px; border-radius: 4px; font-weight: 500; width: fit-content; }
+  .diff-before .diff-label { background: rgba(250,77,86,0.15); color: var(--red); }
+  .diff-after  .diff-label { background: rgba(66,190,101,0.15); color: var(--green); }
+  .copy-fix-btn {
+    margin-top: 10px;
+    font-size: 11px;
+    font-family: var(--mono);
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 5px 12px;
+    cursor: pointer;
+    float: right;
+    transition: all 0.15s;
+  }
+  .copy-fix-btn:hover { border-color: var(--green); color: var(--green); }
+
+  /* ── tests ── */
+  .test-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .test-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+  }
+  .test-item::before { content: '✓'; color: var(--green); }
+
+  /* ── risk ── */
+  .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .risk-item { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; }
+  .risk-item-label { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .risk-item-value { font-size: 13px; line-height: 1.5; }
+  .risk-score-big { font-size: 32px; font-family: var(--mono); font-weight: 500; }
+
+  /* ── PR draft ── */
+  .pr-title {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--accent2);
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .pr-summary {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--muted);
+    margin-bottom: 16px;
+  }
+  .pr-checklist { display: flex; flex-direction: column; gap: 8px; }
+  .pr-check { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+  .pr-check-box {
+    width: 16px; height: 16px;
+    border: 2px solid var(--green);
+    border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .pr-check-box::after { content: '✓'; font-size: 10px; color: var(--green); }
+
+  /* ── error toast ── */
+  #error-toast {
+    display: none;
+    max-width: 860px;
+    margin: 0 auto 16px;
+    padding: 0 32px;
+  }
+  .toast {
+    background: rgba(250,77,86,0.1);
+    border: 1px solid rgba(250,77,86,0.3);
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--red);
+    font-family: var(--mono);
+  }
+
+  @media (max-width: 600px) {
+    header, .hero, .input-card, #results, #error-toast { padding-left: 16px; padding-right: 16px; }
+    .diff-wrap { grid-template-columns: 1fr; }
+    .risk-grid { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
-  <section class="hero">
-    <div class="hero-inner">
-      <div>
-        <span class="badge">🛠️ IBM Bob Dev Day Hackathon POC</span>
-        <h1><span class="brand-gradient">BobTheBuilder</span></h1>
-        <p class="subtitle">A visual self-healing code system that turns debugging into an automated build pipeline: error intake, repo scan, root-cause chain, multi-file fix, tests, risk intelligence, and PR draft.</p>
-        <div class="metrics">
-          <div class="metric"><b>70%</b><span>debug time reduction target</span></div>
-          <div class="metric"><b>5-step</b><span>automated repair workflow</span></div>
-          <div class="metric"><b>PR-ready</b><span>fix summary + tests</span></div>
-        </div>
+
+<header>
+  <div class="logo">Bob<span>The</span>Builder</div>
+  <div style="font-size:12px;color:var(--muted);font-family:var(--mono)">self-healing code system</div>
+  <div class="ibm-badge">IBM watsonx.ai · Granite</div>
+</header>
+
+<div class="hero">
+  <h1>Paste an error.<br><strong>Bob fixes it.</strong></h1>
+  <p>Drop any runtime error or stack trace. IBM watsonx.ai will trace the root cause, generate a multi-file fix, write regression tests, and draft a pull request — all in one shot.</p>
+</div>
+
+<div class="input-card">
+  <div class="card">
+    <div class="card-header">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+      <span style="margin-left:8px">error_input.txt</span>
+    </div>
+    <textarea id="errorInput" rows="6"
+      placeholder="TypeError: unsupported operand type(s) for +: 'int' and 'str'&#10;  at line 42 in calculate_total()&#10;  ...">
+    </textarea>
+    <div class="input-footer">
+      <span class="skill-label">skill level:</span>
+      <div class="skill-tabs">
+        <button class="skill-tab active" data-level="beginner">beginner</button>
+        <button class="skill-tab" data-level="intermediate">intermediate</button>
+        <button class="skill-tab" data-level="expert">expert</button>
       </div>
-      <div class="builder-card">
-        <svg class="bot" viewBox="0 0 420 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="BobTheBuilder robot mascot">
-          <defs>
-            <linearGradient id="helmet" x1="0" x2="1"><stop stop-color="#fbbf24"/><stop offset="1" stop-color="#f59e0b"/></linearGradient>
-            <linearGradient id="face" x1="0" x2="1"><stop stop-color="#38bdf8"/><stop offset="1" stop-color="#6366f1"/></linearGradient>
-          </defs>
-          <rect x="126" y="86" width="168" height="138" rx="34" fill="url(#face)" stroke="#bfdbfe" stroke-width="6"/>
-          <path d="M145 92c8-42 122-42 130 0" fill="url(#helmet)" stroke="#fde68a" stroke-width="5"/>
-          <rect x="163" y="54" width="94" height="38" rx="10" fill="#fbbf24" stroke="#fde68a" stroke-width="5"/>
-          <circle cx="177" cy="146" r="16" fill="#06101f"/><circle cx="243" cy="146" r="16" fill="#06101f"/>
-          <circle cx="181" cy="141" r="5" fill="#fff"/><circle cx="247" cy="141" r="5" fill="#fff"/>
-          <path d="M174 184c22 22 52 22 74 0" fill="none" stroke="#06101f" stroke-width="8" stroke-linecap="round"/>
-          <rect x="86" y="128" width="38" height="78" rx="18" fill="#34d399"/><rect x="296" y="128" width="38" height="78" rx="18" fill="#34d399"/>
-          <rect x="136" y="226" width="148" height="58" rx="20" fill="#111827" stroke="#334155" stroke-width="5"/>
-          <text x="210" y="263" text-anchor="middle" font-size="24" font-family="Arial" font-weight="800" fill="#fbbf24">BOB</text>
-          <path d="M318 78l40-28 13 19-41 28z" fill="#fbbf24" stroke="#fde68a" stroke-width="4"/>
-          <circle cx="364" cy="50" r="13" fill="#94a3b8"/>
-        </svg>
-        <div class="pipeline">
-          <div class="step">1. Error</div><div class="step">2. Scan</div><div class="step">3. Fix</div><div class="step">4. Test</div><div class="step">5. PR</div>
+      <button class="analyze-btn" id="analyzeBtn" onclick="analyze()">
+        <div class="spinner" id="spinner"></div>
+        <span id="btnText">🛠 Build the Fix</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="error-toast"><div class="toast" id="toastMsg"></div></div>
+
+<div id="results">
+  <!-- filled dynamically -->
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:8000";
+let selectedSkill = "beginner";
+
+// skill tab selection
+document.querySelectorAll(".skill-tab").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".skill-tab").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedSkill = btn.dataset.level;
+  });
+});
+
+// section collapse toggle
+function makeSection(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.querySelector(".section-head").addEventListener("click", () => {
+    el.classList.toggle("collapsed");
+  });
+}
+
+function showError(msg) {
+  const toast = document.getElementById("error-toast");
+  document.getElementById("toastMsg").textContent = msg;
+  toast.style.display = "block";
+}
+function hideError() {
+  document.getElementById("error-toast").style.display = "none";
+}
+
+function colorForIndex(i) {
+  return ["c0","c1","c2","c3","c4"][Math.min(i, 4)];
+}
+
+function riskColor(level) {
+  if (!level) return "var(--muted)";
+  if (level.includes("Critical")) return "var(--red)";
+  if (level.includes("High")) return "var(--amber)";
+  if (level.includes("Medium")) return "var(--accent2)";
+  return "var(--green)";
+}
+
+function copyCode(code, btn) {
+  navigator.clipboard.writeText(code).then(() => {
+    btn.textContent = "copied!";
+    setTimeout(() => btn.textContent = "copy fix", 1500);
+  });
+}
+
+function renderResults(d) {
+  const risk = d.risk_analysis || {};
+  const pr   = d.pr_draft || {};
+
+  const html = `
+    <!-- summary bar -->
+    <div class="summary-bar">
+      <span class="error-type-badge">${d.error_type || "Unknown Error"}</span>
+      <span class="risk-badge risk-${risk.risk_level || 'Medium'}">${risk.risk_score || "--"} · ${risk.risk_level || "--"}</span>
+      <span class="powered-by">ibm/granite via watsonx.ai</span>
+    </div>
+
+    <!-- 1. context scan -->
+    <div class="section" id="s1">
+      <div class="section-head">
+        <div class="step-pill s1">1</div>
+        <span class="section-title">Context Scan — files analysed</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        ${(d.context_scan || []).map(f => `
+          <div class="file-row">
+            <div class="file-icon">📄</div>
+            <div>
+              <div class="file-path">${f.file}</div>
+              <div class="file-finding">${f.finding}</div>
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>
+
+    <!-- 2. root cause chain -->
+    <div class="section" id="s2">
+      <div class="section-head">
+        <div class="step-pill s2">2</div>
+        <span class="section-title">Root Cause Chain — why it broke</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        ${(d.root_cause_chain || []).map((step, i, arr) => `
+          <div class="chain-step">
+            <div class="chain-left">
+              <div class="chain-dot ${colorForIndex(i)}"></div>
+              ${i < arr.length - 1 ? '<div class="chain-line"></div>' : ""}
+            </div>
+            <div class="chain-text">${step}</div>
+          </div>`).join("")}
+      </div>
+    </div>
+
+    <!-- 3. plain-English explanation -->
+    <div class="section" id="s3">
+      <div class="section-head">
+        <div class="step-pill s3">3</div>
+        <span class="section-title">Explanation — in plain English</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="explanation-box">${d.adaptive_explanation || "—"}</div>
+      </div>
+    </div>
+
+    <!-- 4. multi-file fix -->
+    <div class="section" id="s4">
+      <div class="section-head">
+        <div class="step-pill s4">4</div>
+        <span class="section-title">Multi-file Fix — copy-ready patches</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        ${(d.multi_file_fix || []).map((fix, i) => `
+          <div class="fix-file">
+            <div class="fix-file-head">
+              <span class="fix-file-name">${fix.file}</span>
+              <span class="fix-change">${fix.change}</span>
+            </div>
+            <div class="diff-wrap">
+              <div class="diff-before">
+                <span class="diff-label">before</span>${fix.before || "—"}
+              </div>
+              <div class="diff-after">
+                <span class="diff-label">after</span>${fix.after || "—"}
+                <button class="copy-fix-btn" onclick="copyCode(\`${(fix.after||'').replace(/`/g,'\\`')}\`, this)">copy fix</button>
+              </div>
+            </div>
+          </div>`).join("")}
+      </div>
+    </div>
+
+    <!-- 5. generated tests -->
+    <div class="section" id="s5">
+      <div class="section-head">
+        <div class="step-pill s5">5</div>
+        <span class="section-title">Generated Tests — regression coverage</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="test-list">
+          ${(d.generated_tests || []).map(t => `<div class="test-item">${t}</div>`).join("")}
         </div>
       </div>
     </div>
-  </section>
 
-  <main class="container">
-    <section class="panel">
-      <div class="section-title">
-        <h2>Paste Runtime Error</h2>
-        <span class="tagline">Can we fix it? Yes, Bob can.</span>
+    <!-- 6. risk analysis -->
+    <div class="section" id="s6">
+      <div class="section-head">
+        <div class="step-pill s1">6</div>
+        <span class="section-title">Risk Analysis — blast radius & safety</span>
+        <span class="chevron">▾</span>
       </div>
-      <div class="row">
-        <div>
-          <textarea id="errorInput">TypeError: unsupported operand type(s) for +: 'int' and 'str'</textarea>
+      <div class="section-body">
+        <div class="risk-grid">
+          <div class="risk-item" style="grid-row: span 1;">
+            <div class="risk-item-label">risk score</div>
+            <div class="risk-score-big" style="color:${riskColor(risk.risk_level)}">${risk.risk_score || "--"}</div>
+            <div style="margin-top:4px;font-size:12px;color:${riskColor(risk.risk_level)}">${risk.risk_level || "--"}</div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-item-label">blast radius</div>
+            <div class="risk-item-value">${risk.blast_radius || "—"}</div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-item-label">impact if unfixed</div>
+            <div class="risk-item-value">${risk.impact || "—"}</div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-item-label">rollback plan</div>
+            <div class="risk-item-value">${risk.rollback_plan || "—"}</div>
+          </div>
+          <div class="risk-item" style="grid-column: span 2;">
+            <div class="risk-item-label">why this fix is safe</div>
+            <div class="risk-item-value">${risk.why_safe || "—"}</div>
+          </div>
         </div>
-        <div>
-          <label>Developer Skill Level</label>
-          <select id="skillLevel">
-            <option value="beginner">Beginner</option>
-            <option value="intermediate">Intermediate</option>
-            <option value="expert">Expert</option>
-          </select>
-          <br><br>
-          <button onclick="analyze()">🛠️ Build the Fix</button>
+      </div>
+    </div>
+
+    <!-- 7. PR draft -->
+    <div class="section" id="s7">
+      <div class="section-head">
+        <div class="step-pill s3">7</div>
+        <span class="section-title">PR Draft — ready to merge</span>
+        <span class="chevron">▾</span>
+      </div>
+      <div class="section-body">
+        <div class="pr-title">${pr.title || "Fix: error resolved"}</div>
+        <div class="pr-summary">${pr.summary || ""}</div>
+        <div class="pr-checklist">
+          ${(pr.checklist || []).map(item => `
+            <div class="pr-check">
+              <div class="pr-check-box"></div>
+              <span>${item}</span>
+            </div>`).join("")}
         </div>
       </div>
-    </section>
+    </div>
+  `;
 
-    <section id="loading" class="panel hidden">
-      <div class="loading-box"><div class="spinner"></div><div><b>BobTheBuilder is working...</b><br>Scanning repo context, tracing root cause, generating tests, and preparing a PR draft.</div></div>
-    </section>
+  const resultsEl = document.getElementById("results");
+  resultsEl.innerHTML = html;
+  resultsEl.style.display = "flex";
 
-    <section id="results" class="hidden">
-      <div class="grid">
-        <div class="card"><h3>🔍 Context Scan</h3><div id="contextScan"></div></div>
-        <div class="card"><h3>🧠 Root Cause Chain</h3><div id="rootCause"></div></div>
-        <div class="card"><h3>🎯 Adaptive Explanation</h3><p id="adaptive"></p></div>
-        <div class="card"><h3>⚠️ Risk Intelligence</h3><div class="risk" id="confidence"></div><p id="riskText"></p></div>
-      </div>
-      <div class="panel"><h2>🛠️ Multi-file Fix Plan</h2><div id="fixes"></div></div>
-      <div class="grid">
-        <div class="card"><h3>🧪 Generated Tests</h3><div id="tests"></div></div>
-        <div class="card"><h3>📄 PR Draft</h3><div id="pr"></div></div>
-      </div>
-    </section>
+  // wire up collapsibles
+  ["s1","s2","s3","s4","s5","s6","s7"].forEach(makeSection);
+  resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
+}
 
-    <p class="footer">BobTheBuilder — Built for the IBM Bob Dev Day Hackathon.</p>
-  </main>
+async function analyze() {
+  const errorText = document.getElementById("errorInput").value.trim();
+  if (!errorText) { showError("Paste an error message first."); return; }
 
-  <script>
-    async function analyze() {
-      const error = document.getElementById('errorInput').value;
-      const skill_level = document.getElementById('skillLevel').value;
-      document.getElementById('loading').classList.remove('hidden');
-      document.getElementById('results').classList.add('hidden');
-      try {
-        const res = await fetch('http://127.0.0.1:8000/analyze', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ error, skill_level })
-        });
-        const data = await res.json();
-        render(data);
-      } catch (err) {
-        alert('Backend not reachable. Start it with: python3 -m uvicorn main:app --reload');
-      } finally {
-        document.getElementById('loading').classList.add('hidden');
-      }
+  hideError();
+  const btn = document.getElementById("analyzeBtn");
+  const spinner = document.getElementById("spinner");
+  const btnText = document.getElementById("btnText");
+
+  btn.disabled = true;
+  spinner.style.display = "block";
+  btnText.textContent = "Analyzing…";
+  document.getElementById("results").style.display = "none";
+
+  try {
+    const res = await fetch(`${API_BASE}/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ error: errorText, skill_level: selectedSkill }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || `HTTP ${res.status}`);
     }
-    function render(data) {
-      document.getElementById('contextScan').innerHTML = data.context_scan.map(x => `<p><b>${x.file}</b><br>${x.finding}</p>`).join('');
-      document.getElementById('rootCause').innerHTML = data.root_cause_chain.map(x => `<span class="pill">${x}</span>`).join('');
-      document.getElementById('adaptive').innerText = data.adaptive_explanation;
-      document.getElementById('confidence').innerHTML = `<div style="font-size: 48px; margin: 10px 0;">${data.risk_analysis.risk_score}</div>`;
-      const riskLevel = data.risk_analysis.risk_level || 'Unknown';
-      const riskText = `<b>${riskLevel} Risk</b><br><p style="margin: 8px 0; color: #c7d2fe; font-size: 13px;">${data.risk_analysis.why_safe}</p><p style="margin: 8px 0; color: #94a3b8; font-size: 12px;"><b>Impact:</b> ${data.risk_analysis.impact || 'N/A'}</p>`;
-      document.getElementById('riskText').innerHTML = riskText;
-      document.getElementById('fixes').innerHTML = data.multi_file_fix.map(f => `<div class="card"><h3>${f.file}</h3><p>${f.change}</p><pre>Before:\n${f.before}\n\nAfter:\n${f.after}</pre></div>`).join('');
-      document.getElementById('tests').innerHTML = data.generated_tests.map(x => `<span class="pill">${x}</span>`).join('');
-      document.getElementById('pr').innerHTML = `<p><b>${data.pr_draft.title}</b></p><p>${data.pr_draft.summary}</p>${data.pr_draft.checklist.map(x => `<span class="pill">${x}</span>`).join('')}`;
-      document.getElementById('results').classList.remove('hidden');
-    }
-  </script>
+    const data = await res.json();
+    renderResults(data);
+  } catch (e) {
+    showError(`Request failed: ${e.message}`);
+  } finally {
+    btn.disabled = false;
+    spinner.style.display = "none";
+    btnText.textContent = "🛠 Build the Fix";
+  }
+}
+
+// allow Ctrl+Enter to submit
+document.getElementById("errorInput").addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") analyze();
+});
+</script>
 </body>
 </html>
