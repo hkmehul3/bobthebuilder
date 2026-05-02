@@ -222,8 +222,10 @@
       document.getElementById('contextScan').innerHTML = data.context_scan.map(x => `<p><b>${x.file}</b><br>${x.finding}</p>`).join('');
       document.getElementById('rootCause').innerHTML = data.root_cause_chain.map(x => `<span class="pill">${x}</span>`).join('');
       document.getElementById('adaptive').innerText = data.adaptive_explanation;
-      document.getElementById('confidence').innerText = data.risk_analysis.confidence;
-      document.getElementById('riskText').innerText = `${data.risk_analysis.risk_level} risk — ${data.risk_analysis.why_safe}`;
+      document.getElementById('confidence').innerHTML = `<div style="font-size: 48px; margin: 10px 0;">${data.risk_analysis.risk_score}</div>`;
+      const riskLevel = data.risk_analysis.risk_level || 'Unknown';
+      const riskText = `<b>${riskLevel} Risk</b><br><p style="margin: 8px 0; color: #c7d2fe; font-size: 13px;">${data.risk_analysis.why_safe}</p><p style="margin: 8px 0; color: #94a3b8; font-size: 12px;"><b>Impact:</b> ${data.risk_analysis.impact || 'N/A'}</p>`;
+      document.getElementById('riskText').innerHTML = riskText;
       document.getElementById('fixes').innerHTML = data.multi_file_fix.map(f => `<div class="card"><h3>${f.file}</h3><p>${f.change}</p><pre>Before:\n${f.before}\n\nAfter:\n${f.after}</pre></div>`).join('');
       document.getElementById('tests').innerHTML = data.generated_tests.map(x => `<span class="pill">${x}</span>`).join('');
       document.getElementById('pr').innerHTML = `<p><b>${data.pr_draft.title}</b></p><p>${data.pr_draft.summary}</p>${data.pr_draft.checklist.map(x => `<span class="pill">${x}</span>`).join('')}`;
