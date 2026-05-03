@@ -1,4 +1,4 @@
-from utils import to_number
+from .utils import to_number
 
 def add_numbers(a, b):
     return to_number(a) + to_number(b)
